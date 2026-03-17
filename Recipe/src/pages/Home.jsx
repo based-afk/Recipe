@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import RecipeCard from "@/components/RecipeCard";
 import SkeletonCard from "@/components/SkeletonCard";
-import CookingMode from "@/components/CookingMode";
+import RecipeModal from "@/components/RecipeModal";
 import api from "@/api/axios";
 import { X, Clock, TrendingUp, ChevronRight } from "lucide-react";
 
@@ -22,6 +22,17 @@ const POPULAR_INGREDIENTS = [
   "spinach",
   "mushroom",
   "lemon",
+];
+
+const SUGGESTIONS = [
+  "chicken",
+  "rice",
+  "egg",
+  "tomato",
+  "onion",
+  "garlic",
+  "milk",
+  "potato",
 ];
 
 const TRENDING_SEARCHES = [
@@ -83,6 +94,8 @@ export default function Home() {
   const [cookingRecipeId, setCookingRecipeId] = useState(null);
   const [sortBy, setSortBy] = useState("none");
   const [recentSearches, setRecentSearches] = useState(loadRecentSearches);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     api
@@ -97,17 +110,23 @@ export default function Home() {
   }, []);
 
   const addIngredient = (val) => {
-    const v = (val ?? inputValue).trim().toLowerCase();
-    if (v && !ingredients.includes(v)) {
-      setIngredients((prev) => [...prev, v]);
+    const raw = (val ?? inputValue).trim().toLowerCase();
+    const cleaned = raw.replace(/,$/, "");
+    if (cleaned && !ingredients.includes(cleaned)) {
+      setIngredients((prev) => [...prev, cleaned]);
     }
     setInputValue("");
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addIngredient();
+    } else if (e.key === "Backspace" && inputValue.length === 0) {
+      if (ingredients.length > 0) {
+        e.preventDefault();
+        setIngredients((prev) => prev.slice(0, -1));
+      }
     }
   };
 
@@ -198,6 +217,14 @@ export default function Home() {
     return copy;
   }, [recipes, sortBy]);
 
+  const filteredSuggestions = useMemo(() => {
+    const query = inputValue.trim().toLowerCase();
+    if (!query) return [];
+    return SUGGESTIONS.filter(
+      (item) => item.includes(query) && !ingredients.includes(item),
+    );
+  }, [inputValue, ingredients]);
+
   return (
     <main className="min-h-screen bg-background">
       {/* ── Hero / Search section ── */}
@@ -210,45 +237,70 @@ export default function Home() {
         </p>
 
         <div className="w-full max-w-xl">
-          {/* Ingredient chips */}
-          {ingredients.length > 0 && (
-            <div className="mb-3">
-              <p className="text-xs text-text-secondary font-body mb-2 text-left">
-                {ingredients.length} ingredient
-                {ingredients.length !== 1 ? "s" : ""} added
+          {/* Ingredient input + chips */}
+          <div className="mb-3 text-left">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-text-secondary font-body">
+                Ingredients
               </p>
-              <div className="flex flex-wrap gap-2 justify-start">
+              {ingredients.length > 0 && (
+                <span className="text-xs text-text-muted font-body">
+                  {ingredients.length} added
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-[#111] px-3 py-3 transition-all duration-200 focus-within:border-accent focus-within:shadow-[0_0_0_2px_rgba(245,197,24,0.2)]">
                 {ingredients.map((ing, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-1.5 border border-accent text-accent text-sm px-3 py-1 rounded-full font-body transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
+                    className="inline-flex items-center gap-1.5 bg-accent text-black text-[13px] px-3 py-1 rounded-full font-body font-semibold transition-transform duration-200 hover:scale-[1.03]"
                   >
                     {ing}
                     <button
                       onClick={() => removeIngredient(i)}
                       aria-label={`Remove ${ing}`}
-                      className="hover:text-white transition-colors leading-none active:scale-90"
+                      className="leading-none text-black/70 hover:text-black transition-colors active:scale-90"
                     >
-                      <X size={13} />
+                      <X size={12} />
                     </button>
                   </span>
                 ))}
+                <Input
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setTimeout(() => setIsInputFocused(false), 120)}
+                  placeholder={
+                    ingredients.length === 0
+                      ? "Add ingredient… (Enter or comma)"
+                      : "Add another ingredient…"
+                  }
+                  className="h-6 w-auto min-w-[160px] flex-1 border-0 bg-transparent px-1 py-0 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
               </div>
-            </div>
-          )}
 
-          {/* Text input */}
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              ingredients.length === 0
-                ? "e.g. eggs, tomato, onion — press Enter to add"
-                : "Add another ingredient…"
-            }
-            className="w-full h-12 text-base mb-3"
-          />
+              {isInputFocused && filteredSuggestions.length > 0 && (
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-surface/95 backdrop-blur-md shadow-xl">
+                  {filteredSuggestions.map((item) => (
+                    <button
+                      key={item}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        addIngredient(item);
+                        inputRef.current?.focus();
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Diet filter chips */}
           <div className="flex flex-wrap gap-2 mb-5 justify-start">
@@ -281,7 +333,7 @@ export default function Home() {
             onClick={handleSearch}
             disabled={ingredients.length === 0 || searching}
             size="lg"
-            className="w-full text-base active:scale-[0.98] transition-transform"
+            className="w-full text-base transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_rgba(0,0,0,0.35)] active:scale-[0.98]"
           >
             {searching ? "Searching…" : "Find Recipes"}
           </Button>
@@ -457,9 +509,9 @@ export default function Home() {
         </section>
       )}
 
-      {/* Cooking mode overlay */}
+      {/* Recipe modal */}
       {cookingRecipeId && (
-        <CookingMode
+        <RecipeModal
           recipeId={cookingRecipeId}
           onClose={() => setCookingRecipeId(null)}
         />

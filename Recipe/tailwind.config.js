@@ -16,8 +16,8 @@ export default {
         "text-muted": "#555555",
       },
       fontFamily: {
-        heading: ['"Playfair Display"', "serif"],
-        body: ["Inter", "sans-serif"],
+        heading: ['"Titillium Web"', "sans-serif"],
+        body: ['"Titillium Web"', "sans-serif"],
       },
     },
   },

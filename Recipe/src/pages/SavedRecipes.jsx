@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import RecipeCard from "@/components/RecipeCard";
-import CookingMode from "@/components/CookingMode";
+import RecipeModal from "@/components/RecipeModal";
 import api from "@/api/axios";
 
 export default function SavedRecipes() {
@@ -19,7 +19,9 @@ export default function SavedRecipes() {
   const handleUnsave = async (spoonacularId) => {
     try {
       await api.delete(`/api/saved/${spoonacularId}`);
-      setRecipes((prev) => prev.filter((r) => r.spoonacular_id !== spoonacularId));
+      setRecipes((prev) =>
+        prev.filter((r) => r.spoonacular_id !== spoonacularId),
+      );
     } catch (err) {
       console.error("Failed to unsave recipe", err);
     }
@@ -78,7 +80,7 @@ export default function SavedRecipes() {
       </div>
 
       {cookingRecipeId && (
-        <CookingMode
+        <RecipeModal
           recipeId={cookingRecipeId}
           onClose={() => setCookingRecipeId(null)}
         />
