@@ -483,7 +483,7 @@ export default function Home() {
             <div className="text-center py-16">
               <p className="text-text-muted font-body text-5xl mb-4">🥲</p>
               <p className="text-text-secondary font-body mb-2">
-                No recipes found for those ingredients.
+                No recipes found.
               </p>
               <p className="text-text-muted font-body text-sm">
                 Try removing a filter or swapping an ingredient.

@@ -123,7 +123,10 @@ export default function CookingMode({ recipeId, onClose }) {
         </div>
       </div>
 
-      <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+      <div
+        ref={listRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+      >
         {loading ? (
           <div className="mx-auto w-full max-w-2xl px-6 md:px-10 py-12">
             <p className="text-text-secondary font-body animate-pulse">
@@ -164,7 +167,9 @@ export default function CookingMode({ recipeId, onClose }) {
                     ? "h-7 w-7 bg-accent/15 text-accent border border-accent/40"
                     : "h-7 w-7 border border-border bg-surface text-text-muted";
                 const lineClasses = isCompleted ? "bg-accent/60" : "bg-border";
-                const labelClasses = isActive ? "text-accent" : "text-text-muted";
+                const labelClasses = isActive
+                  ? "text-accent"
+                  : "text-text-muted";
                 const bodyClasses = isCompleted
                   ? "text-text-secondary/70"
                   : isActive
@@ -197,10 +202,14 @@ export default function CookingMode({ recipeId, onClose }) {
                       )}
                     </div>
                     <div className="pt-1 flex-1">
-                      <p className={`text-xs uppercase tracking-[0.2em] ${labelClasses}`}>
+                      <p
+                        className={`text-xs uppercase tracking-[0.2em] ${labelClasses}`}
+                      >
                         Step {String(index + 1).padStart(2, "0")}
                       </p>
-                      <p className={`mt-2 text-base leading-relaxed ${bodyClasses}`}>
+                      <p
+                        className={`mt-2 text-base leading-relaxed ${bodyClasses}`}
+                      >
                         {step.step}
                       </p>
                     </div>
