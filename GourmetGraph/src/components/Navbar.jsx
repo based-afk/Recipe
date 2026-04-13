@@ -30,7 +30,7 @@ export default function Navbar() {
         <span className="text-xl" aria-hidden="true">
           🍲
         </span>
-        Recipe Finder
+        GourmetGraph
       </Link>
 
       <div className="flex items-center gap-4">

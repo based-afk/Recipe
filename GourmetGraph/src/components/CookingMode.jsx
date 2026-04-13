@@ -94,7 +94,7 @@ export default function CookingMode({ recipeId, onClose }) {
           <span className="text-xl" aria-hidden="true">
             🍲
           </span>
-          <span className="text-base">Recipe Finder</span>
+          <span className="text-base">GourmetGraph</span>
         </div>
         <div className="flex items-center gap-4">
           <Link
